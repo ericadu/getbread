@@ -18,7 +18,6 @@ def compress(image_file):
     hsize = int((float(image.size[1])*float(wpercent)))
     
     image = image.resize((basewidth,hsize), Image.Resampling.LANCZOS)
-    image = image.rotate(270)
     image.save(image_file, 
                  "JPEG", 
                  optimize = True, 
