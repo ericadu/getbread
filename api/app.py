@@ -7,9 +7,6 @@ import os
 
 app = Flask(__name__)
 
-# REPLICATE_API = "47dcfd8c74eeb1d952d40efa0754f8f689acf3a8"
-REPLICATE_API = "495a4c8abb4053f3ab4322076ece88512026b156"
-
 def compress(image_file):
     filepath = os.path.join(os.getcwd(), image_file)
 
