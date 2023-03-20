@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:get_bready/fixed_height_button.dart';
@@ -22,6 +23,7 @@ class _ImageFromGalleryState extends State<ImageFromGallery> {
   File? _image;
   late ImagePicker imagePicker;
   String? imgUrl;
+  bool loading = false;
 
   @override
   void initState() {
@@ -73,9 +75,20 @@ class _ImageFromGalleryState extends State<ImageFromGallery> {
 
       setState(() {
         imgUrl = map['image_url'];
+        loading = false;
       });
     });
     // Print the response status cod
+  }
+
+  String get text {
+    if (loading) {
+      return 'Adding bread to your fridge...';
+    }
+    if (imgUrl != null) {
+      return 'TADA!';
+    }
+    return 'Take a picture of your fridge';
   }
 
   @override
@@ -83,72 +96,78 @@ class _ImageFromGalleryState extends State<ImageFromGallery> {
     double width = MediaQuery.of(context).size.width * 0.9;
     double height = MediaQuery.of(context).size.height * 0.6;
     return Scaffold(
-        appBar: AppBar(title: const Text('Take a picture of your fridge')),
+        appBar: AppBar(title: Text(text)),
         body: Container(
             padding:
                 const EdgeInsets.only(top: 40, bottom: 40, left: 20, right: 20),
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                imgUrl != null
-                    ? Container(
-                        height: height,
-                        width: width,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                alignment: Alignment.topLeft,
-                                image: NetworkImage(imgUrl!),
-                                fit: BoxFit.contain)),
-                      )
-                    : GestureDetector(
-                        onTap: () async {
-                          XFile? image = await imagePicker.pickImage(
-                              source: ImageSource.camera,
-                              imageQuality: 50,
-                              preferredCameraDevice: CameraDevice.rear);
-                          if (image != null) {
-                            setState(() {
-                              _image = File(image.path);
-                            });
-                          }
-                        },
-                        child: Container(
-                          child: _image != null
-                              ? Image.file(
-                                  _image!,
-                                  width: width,
-                                  height: height,
-                                  fit: BoxFit.fitHeight,
-                                )
-                              : Container(
-                                  decoration:
-                                      const BoxDecoration(color: Colors.amber),
-                                  width: width,
-                                  height: height,
-                                  child: Icon(
-                                    Icons.camera_alt,
-                                    color: Colors.grey[800],
-                                  ),
-                                ),
-                        )),
-                if (_image != null || imgUrl != null)
-                  FixedHeightRoundedWideButton(
-                    text: imgUrl != null ? 'Start Over' : 'Use this image',
-                    onPressed: imgUrl != null
-                        ? () {
-                            setState(() {
-                              _image = null;
-                              imgUrl = null;
-                            });
-                          }
-                        : () {
-                            sendImage();
-                          },
-                  )
-              ],
-            )));
+            child: loading
+                ? Center(child: SpinKitPumpingHeart(color: Colors.amber))
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      imgUrl != null
+                          ? Container(
+                              height: height,
+                              width: width,
+                              decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      alignment: Alignment.topLeft,
+                                      image: NetworkImage(imgUrl!),
+                                      fit: BoxFit.contain)),
+                            )
+                          : GestureDetector(
+                              onTap: () async {
+                                XFile? image = await imagePicker.pickImage(
+                                    source: ImageSource.camera,
+                                    imageQuality: 50,
+                                    preferredCameraDevice: CameraDevice.rear);
+                                if (image != null) {
+                                  setState(() {
+                                    _image = File(image.path);
+                                  });
+                                }
+                              },
+                              child: Container(
+                                child: _image != null
+                                    ? Image.file(
+                                        _image!,
+                                        width: width,
+                                        height: height,
+                                        fit: BoxFit.fitHeight,
+                                      )
+                                    : Container(
+                                        decoration: const BoxDecoration(
+                                            color: Colors.amber),
+                                        width: width,
+                                        height: height,
+                                        child: Icon(
+                                          Icons.camera_alt,
+                                          color: Colors.grey[800],
+                                        ),
+                                      ),
+                              )),
+                      if (_image != null || imgUrl != null)
+                        FixedHeightRoundedWideButton(
+                          text:
+                              imgUrl != null ? 'Start Over' : 'Use this image',
+                          onPressed: imgUrl != null
+                              ? () {
+                                  setState(() {
+                                    _image = null;
+                                    imgUrl = null;
+                                  });
+                                }
+                              : () {
+                                  setState(() {
+                                    loading = true;
+                                  });
+                                  sendImage();
+                                },
+                        )
+                    ],
+                  )));
   }
 }

@@ -7,12 +7,14 @@ import os
 
 app = Flask(__name__)
 
-REPLICATE_API = "47dcfd8c74eeb1d952d40efa0754f8f689acf3a8"
+# REPLICATE_API = "47dcfd8c74eeb1d952d40efa0754f8f689acf3a8"
+REPLICATE_API = "495a4c8abb4053f3ab4322076ece88512026b156"
 
 def compress(image_file):
     filepath = os.path.join(os.getcwd(), image_file)
 
     image = Image.open(filepath)
+    image = image.rotate(270, expand=True)
     basewidth = 550
     wpercent = (basewidth/float(image.size[0]))
     hsize = int((float(image.size[1])*float(wpercent)))
@@ -22,6 +24,7 @@ def compress(image_file):
                  "JPEG", 
                  optimize = True, 
                  quality = 50)
+    
     return
 
 
@@ -62,6 +65,9 @@ def generate():
     return jsonify({
         'image_url': output[0]
     }), 200
+    # return jsonify({
+    #     'image_url': 'https://replicate.delivery/pbxt/3qzfwFdVrVwGTCxIqP3zT1FJxIN6qUe93UOyuDMaefd6vUlCB/out-0.png'
+    # }), 200
 
 if __name__ == '__main__':
     app.run()
